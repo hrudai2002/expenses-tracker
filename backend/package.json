@@ -1,0 +1,27 @@
+{
+  "name": "expenses-tracker-backend",
+  "version": "1.0.0",
+  "description": "Backend service for the expenses tracker app",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.9.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "prisma": "^7.9.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

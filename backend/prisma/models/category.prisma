@@ -1,0 +1,16 @@
+model Category {
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  name         String
+  type         CategoryType
+  color        String?
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@unique([userId, name, type])
+  @@map("categories")
+}
+
