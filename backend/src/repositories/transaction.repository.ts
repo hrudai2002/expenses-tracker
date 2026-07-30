@@ -1,5 +1,6 @@
 import type { CategoryType, Prisma, Transaction, Category } from '@prisma/client/index';
 import { prisma } from '../config/database.js';
+import { newId } from '../utils/id.js';
 
 type TransactionWithCategory = Transaction & {
   category: Category;
@@ -16,7 +17,7 @@ class TransactionRepository {
     transactionDate: Date;
   }): Promise<TransactionWithCategory> {
     return prisma.transaction.create({
-      data,
+      data: { id: newId(), ...data },
       include: {
         category: true
       }

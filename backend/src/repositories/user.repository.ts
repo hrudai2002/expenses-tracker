@@ -1,10 +1,14 @@
 import type { User } from '@prisma/client/index';
 import { prisma } from '../config/database.js';
+import { newId } from '../utils/id.js';
 
 class UserRepository {
   async create(data: { name: string; email: string; passwordHash: string }): Promise<User> {
     return prisma.user.create({
-      data
+      data: {
+        id: newId(),
+        ...data
+      }
     });
   }
 

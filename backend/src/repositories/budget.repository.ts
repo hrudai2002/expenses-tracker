@@ -1,5 +1,6 @@
 import type { Budget, Category } from '@prisma/client/index';
 import { prisma } from '../config/database.js';
+import { newId } from '../utils/id.js';
 
 type BudgetWithCategory = Budget & {
   category: Category;
@@ -14,7 +15,7 @@ class BudgetRepository {
     amount: number;
   }): Promise<BudgetWithCategory> {
     return prisma.budget.create({
-      data,
+      data: { id: newId(), ...data },
       include: {
         category: true
       }

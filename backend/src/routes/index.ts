@@ -32,7 +32,7 @@ function buildApiRouter(): Router {
   const categoryService = new CategoryService(categoryRepository);
   const transactionService = new TransactionService(transactionRepository, categoryService);
   const budgetService = new BudgetService(budgetRepository, transactionRepository, categoryService);
-  const dashboardService = new DashboardService(transactionRepository, budgetRepository);
+  const dashboardService = new DashboardService(transactionRepository, budgetRepository, categoryRepository);
 
   const authController = new AuthController(authService);
   const categoryController = new CategoryController(categoryService);

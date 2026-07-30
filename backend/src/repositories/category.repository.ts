@@ -1,9 +1,10 @@
 import type { Category, CategoryType } from '@prisma/client/index';
 import { prisma } from '../config/database.js';
+import { newId } from '../utils/id.js';
 
 class CategoryRepository {
   async create(data: { userId: string; name: string; type: CategoryType; color?: string }): Promise<Category> {
-    return prisma.category.create({ data });
+    return prisma.category.create({ data: { id: newId(), ...data } });
   }
 
   async findManyByUser(userId: string): Promise<Category[]> {
