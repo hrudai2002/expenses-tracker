@@ -7,17 +7,7 @@ const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
 };
 
-function createPool() {
-  const usesRemoteSsl =
-    env.databaseUrl.includes('supabase') || env.databaseUrl.includes('sslmode=require');
-
-  return new pg.Pool({
-    connectionString: env.databaseUrl,
-    ...(usesRemoteSsl ? { ssl: { rejectUnauthorized: false } } : {})
-  });
-}
-
-const pool = createPool();
+const pool = new pg.Pool({ connectionString: env.databaseUrl });
 const adapter = new PrismaPg(pool);
 
 const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
