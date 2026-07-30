@@ -1,14 +1,24 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client/index';
+import pg from 'pg';
 import { env } from './env.js';
 
 const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
 };
 
-const adapter = new PrismaPg({
-  connectionString: env.databaseUrl
-});
+function createPool() {
+  const usesRemoteSsl =
+    env.databaseUrl.includes('supabase') || env.databaseUrl.includes('sslmode=require');
+
+  return new pg.Pool({
+    connectionString: env.databaseUrl,
+    ...(usesRemoteSsl ? { ssl: { rejectUnauthorized: false } } : {})
+  });
+}
+
+const pool = createPool();
+const adapter = new PrismaPg(pool);
 
 const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
