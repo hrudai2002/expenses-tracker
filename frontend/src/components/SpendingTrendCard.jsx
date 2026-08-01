@@ -1,5 +1,9 @@
 import { formatRupee } from '../lib/currency.js';
 
+function shouldShowDayLabel(day, totalDays) {
+  return day === 1 || day % 5 === 0 || day === totalDays;
+}
+
 function SpendingTrendCard({ data }) {
   const width = 560;
   const height = 220;
@@ -26,7 +30,7 @@ function SpendingTrendCard({ data }) {
         <h3>Spending Trend</h3>
       </div>
       <div className="line-chart-shell">
-        <svg viewBox={`0 0 ${width} ${height}`} className="line-chart" role="img" aria-label="Spending trend chart">
+        <svg viewBox={`0 0 ${width} ${height}`} className="line-chart" role="img" aria-label="Daily spending trend chart">
           {yTicks.map((tick) => {
             const y = padding.top + chartHeight - (tick / maxValue) * chartHeight;
             return (
@@ -42,11 +46,13 @@ function SpendingTrendCard({ data }) {
           <polyline points={incomePath} className="line-chart-line income" fill="none" />
           {data.map((point, index) => {
             const x = padding.left + index * xStep;
-            return (
-              <text key={point.month} x={x} y={height - 8} className="line-chart-label" textAnchor="middle">
-                {point.month}
+            const showLabel = shouldShowDayLabel(point.day, data.length);
+
+            return showLabel ? (
+              <text key={point.day} x={x} y={height - 8} className="line-chart-label" textAnchor="middle">
+                {point.label}
               </text>
-            );
+            ) : null;
           })}
         </svg>
         <div className="chart-legend">

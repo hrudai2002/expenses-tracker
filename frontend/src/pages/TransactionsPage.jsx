@@ -22,11 +22,21 @@ function TransactionsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [modalHost, setModalHost] = useState(null);
+
+  const isDialogOpen = modalOpen || Boolean(pendingDelete);
 
   useEffect(() => {
-    setModalHost(document.querySelector('.app-main'));
-  }, []);
+    if (!isDialogOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isDialogOpen]);
 
   const hasActiveFilters = Boolean(selectedType || selectedMonthYear || selectedCategoryId);
 
@@ -179,7 +189,7 @@ function TransactionsPage() {
   }, [filteredTransactions]);
 
   const modal =
-    modalOpen && modalHost ? (
+    modalOpen ? (
       <AddTransactionModal
         token={token}
         categories={categories}
@@ -191,7 +201,7 @@ function TransactionsPage() {
     ) : null;
 
   const deleteConfirm =
-    pendingDelete && modalHost ? (
+    pendingDelete ? (
       <div className="modal-backdrop" onClick={() => !isDeleting && setPendingDelete(null)}>
         <div
           className="modal-card confirm-dialog"
@@ -334,7 +344,15 @@ function TransactionsPage() {
         onEdit={handleEditTransaction}
       />
 
-      {modalHost ? createPortal(<>{modal}{deleteConfirm}</>, modalHost) : null}
+      {(modalOpen || pendingDelete)
+        ? createPortal(
+            <>
+              {modal}
+              {deleteConfirm}
+            </>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

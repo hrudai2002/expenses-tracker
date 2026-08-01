@@ -87,6 +87,25 @@ class AuthService {
       updatedAt: user.updatedAt
     };
   }
+
+  async changePassword(userId: string, payload: { currentPassword: string; newPassword: string }) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new AppError('User not found.', HTTP_STATUS.NOT_FOUND);
+    }
+
+    const passwordMatches = await comparePassword(payload.currentPassword, user.passwordHash);
+
+    if (!passwordMatches) {
+      throw new AppError('Current password is incorrect.', HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    const passwordHash = await hashPassword(payload.newPassword);
+    await this.userRepository.updatePasswordHash(userId, passwordHash);
+
+    return { message: 'Password updated successfully.' };
+  }
 }
 
 export { AuthService };

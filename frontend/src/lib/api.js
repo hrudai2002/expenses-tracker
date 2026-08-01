@@ -49,6 +49,13 @@ const authApi = {
   },
   me(token) {
     return request('/api/auth/me', { token });
+  },
+  changePassword(token, payload) {
+    return request('/api/auth/change-password', {
+      token,
+      method: 'POST',
+      body: payload
+    });
   }
 };
 

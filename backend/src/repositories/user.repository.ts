@@ -23,6 +23,13 @@ class UserRepository {
       where: { id }
     });
   }
+
+  async updatePasswordHash(id: string, passwordHash: string): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: { passwordHash }
+    });
+  }
 }
 
 export { UserRepository };

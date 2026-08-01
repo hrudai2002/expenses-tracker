@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
+import ChangePasswordModal from './ChangePasswordModal.jsx';
 import { BudgetIcon, DashboardIcon, MoreIcon, TransactionsIcon, TrendUpIcon } from './Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -10,9 +12,23 @@ const navItems = [
 ];
 
 function Sidebar() {
-  const { user, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!passwordModalOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [passwordModalOpen]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -34,6 +50,16 @@ function Sidebar() {
     logout();
   };
 
+  const handleOpenChangePassword = () => {
+    setMenuOpen(false);
+    setPasswordModalOpen(true);
+  };
+
+  const passwordModal =
+    passwordModalOpen ? (
+      <ChangePasswordModal token={token} isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} />
+    ) : null;
+
   return (
     <aside className="sidebar">
       <div className="brand-panel">
@@ -42,7 +68,7 @@ function Sidebar() {
         </div>
         <div>
           <h1>SpendWise</h1>
-          <p>Smart Tracker</p>
+          <p>Expenses Tracker</p>
         </div>
       </div>
 
@@ -83,6 +109,9 @@ function Sidebar() {
             </button>
             {menuOpen ? (
               <div className="sidebar-menu-dropdown">
+                <button type="button" onClick={handleOpenChangePassword}>
+                  Change password
+                </button>
                 <button type="button" onClick={handleLogout}>
                   Logout
                 </button>
@@ -91,6 +120,8 @@ function Sidebar() {
           </div>
         </div>
       </div>
+
+      {passwordModalOpen ? createPortal(passwordModal, document.body) : null}
     </aside>
   );
 }

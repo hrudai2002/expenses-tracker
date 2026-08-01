@@ -3,21 +3,31 @@ import { CategoryRepository } from '../repositories/category.repository.js';
 import { TransactionRepository } from '../repositories/transaction.repository.js';
 import { toNullableNumber } from '../utils/response-mappers.js';
 
-const palette = ['#6567eb', '#ff8a33', '#6b5ffc', '#ffcc33', '#33c56c', '#ff66bb'];
+// ponytail: chart ignores stored category colors — DB values can be distinct hex but visually identical
+const chartPalette = ['#6366F1', '#F97316', '#22C55E', '#EC4899', '#06B6D4', '#EAB308'];
 
-function buildTrendMonths(endMonth: number, endYear: number, count: number) {
-  const months = [];
+function buildDailyTrend(
+  transactions: Array<{ amount: { toString(): string }; type: 'INCOME' | 'EXPENSE'; transactionDate: Date }>,
+  month: number,
+  year: number
+) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const incomeByDay = Array.from({ length: daysInMonth }, () => 0);
+  const expenseByDay = Array.from({ length: daysInMonth }, () => 0);
 
-  for (let index = count - 1; index >= 0; index -= 1) {
-    const date = new Date(endYear, endMonth - 1 - index, 1);
-    months.push({
-      month: date.getMonth() + 1,
-      year: date.getFullYear(),
-      label: date.toLocaleDateString('en-US', { month: 'short' })
-    });
+  for (const transaction of transactions) {
+    const day = new Date(transaction.transactionDate).getDate();
+    const amount = Number(transaction.amount.toString());
+    const bucket = transaction.type === 'INCOME' ? incomeByDay : expenseByDay;
+    bucket[day - 1] += amount;
   }
 
-  return months;
+  return Array.from({ length: daysInMonth }, (_, index) => ({
+    day: index + 1,
+    label: String(index + 1),
+    income: incomeByDay[index],
+    expense: expenseByDay[index]
+  }));
 }
 
 class DashboardService {
@@ -28,9 +38,7 @@ class DashboardService {
   ) {}
 
   async getDashboard(userId: string, query: { month: number; year: number }) {
-    const trendMonths = buildTrendMonths(query.month, query.year, 6);
-
-    const [incomeAggregate, expenseAggregate, budgets, spendMap, recentTransactions, categories, trendResults] =
+    const [incomeAggregate, expenseAggregate, budgets, spendMap, recentTransactions, categories, monthTransactions] =
       await Promise.all([
         this.transactionRepository.aggregateByType(userId, query.month, query.year, 'INCOME'),
         this.transactionRepository.aggregateByType(userId, query.month, query.year, 'EXPENSE'),
@@ -38,20 +46,7 @@ class DashboardService {
         this.transactionRepository.getCategorySpendMap(userId, query.month, query.year),
         this.transactionRepository.findRecentByUser(userId, query.month, query.year, 5),
         this.categoryRepository.findManyByUser(userId),
-        Promise.all(
-          trendMonths.map(async ({ month, year, label }) => {
-            const [incomeResult, expenseResult] = await Promise.all([
-              this.transactionRepository.aggregateByType(userId, month, year, 'INCOME'),
-              this.transactionRepository.aggregateByType(userId, month, year, 'EXPENSE')
-            ]);
-
-            return {
-              month: label,
-              income: toNullableNumber(incomeResult._sum.amount) ?? 0,
-              expense: toNullableNumber(expenseResult._sum.amount) ?? 0
-            };
-          })
-        )
+        this.transactionRepository.findAmountsForMonth(userId, query.month, query.year)
       ]);
 
     const totalIncome = toNullableNumber(incomeAggregate._sum.amount) ?? 0;
@@ -59,12 +54,15 @@ class DashboardService {
 
     const categorySpending = categories
       .filter((category) => category.type === 'EXPENSE')
-      .map((category, index) => ({
+      .map((category) => ({
         name: category.name,
-        color: category.color ?? palette[index % palette.length],
         amount: spendMap.get(category.id) ?? 0
       }))
-      .filter((item) => item.amount > 0);
+      .filter((item) => item.amount > 0)
+      .map((item, index) => ({
+        ...item,
+        color: chartPalette[index % chartPalette.length]
+      }));
 
     return {
       month: query.month,
@@ -74,7 +72,7 @@ class DashboardService {
         totalExpense,
         balance: totalIncome - totalExpense
       },
-      trend: trendResults,
+      trend: buildDailyTrend(monthTransactions, query.month, query.year),
       categorySpending,
       budgets: budgets.map((budget) => {
         const spentAmount = spendMap.get(budget.categoryId) ?? 0;

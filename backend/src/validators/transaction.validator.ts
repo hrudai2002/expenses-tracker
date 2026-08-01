@@ -93,4 +93,3 @@ function validateTransactionQuery(query: Record<string, unknown>): TransactionQu
 }
 
 export { type TransactionPayload, type TransactionQuery, validateTransactionPayload, validateTransactionQuery };
-

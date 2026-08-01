@@ -164,7 +164,23 @@ class TransactionRepository {
       groupedRows.map((row) => [row.categoryId, Number(row._sum.amount ?? 0)])
     );
   }
+
+  async findAmountsForMonth(userId: string, month: number, year: number) {
+    return prisma.transaction.findMany({
+      where: {
+        userId,
+        transactionDate: {
+          gte: new Date(year, month - 1, 1),
+          lt: new Date(year, month, 1)
+        }
+      },
+      select: {
+        amount: true,
+        type: true,
+        transactionDate: true
+      }
+    });
+  }
 }
 
 export { type TransactionWithCategory, TransactionRepository };
-

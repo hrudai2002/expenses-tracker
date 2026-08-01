@@ -1,6 +1,6 @@
 import { formatRupee } from '../lib/currency.js';
 
-const palette = ['#6567eb', '#ff8a33', '#6b5ffc', '#ffcc33', '#33c56c', '#ff66bb'];
+const chartPalette = ['#6366F1', '#F97316', '#22C55E', '#EC4899', '#06B6D4', '#EAB308'];
 
 function SpendingCategoriesCard({ segments }) {
   const total = segments.reduce((sum, segment) => sum + segment.amount, 0);
@@ -10,9 +10,10 @@ function SpendingCategoriesCard({ segments }) {
     total > 0
       ? segments
           .map((segment, index) => {
+            const color = chartPalette[index % chartPalette.length];
             const start = cursor;
             cursor += (segment.amount / total) * 100;
-            return `${segment.color || palette[index % palette.length]} ${start}% ${cursor}%`;
+            return `${color} ${start}% ${cursor}%`;
           })
           .join(', ')
       : '#e6e9f6 0% 100%';
@@ -33,10 +34,7 @@ function SpendingCategoriesCard({ segments }) {
           {segments.length ? (
             segments.map((segment, index) => (
               <div className="donut-legend-item" key={segment.name}>
-                <span
-                  className="dot"
-                  style={{ background: segment.color || palette[index % palette.length] }}
-                />
+                <span className="dot" style={{ background: chartPalette[index % chartPalette.length] }} />
                 <div>
                   <strong>{segment.name}</strong>
                   <p>{formatRupee(segment.amount)}</p>

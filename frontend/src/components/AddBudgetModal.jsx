@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { budgetApi } from '../lib/api.js';
 import { getMonthYearLabel } from '../lib/month.js';
+import { ChevronDownIcon } from './Icons.jsx';
 
-function AddBudgetModal({ token, isOpen, onClose, onSaved, categories, budget = null, month, year }) {
+function AddBudgetModal({ token, isOpen, onClose, onSaved, categories, expenseCategoryCount = 0, budget = null, month, year }) {
   const isEditing = Boolean(budget);
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -10,6 +11,19 @@ function AddBudgetModal({ token, isOpen, onClose, onSaved, categories, budget = 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const monthLabel = useMemo(() => getMonthYearLabel(`${year}-${String(month).padStart(2, '0')}`), [month, year]);
+  const noCategoriesAvailable = !isEditing && !categories.length;
+
+  const emptyMessage = useMemo(() => {
+    if (!noCategoriesAvailable) {
+      return '';
+    }
+
+    if (!expenseCategoryCount) {
+      return 'Create an expense category first from the Transactions page, then come back to set a budget.';
+    }
+
+    return `Every expense category already has a budget for ${monthLabel}. Edit an existing budget or create a new category from Transactions.`;
+  }, [expenseCategoryCount, monthLabel, noCategoriesAvailable]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -76,54 +90,69 @@ function AddBudgetModal({ token, isOpen, onClose, onSaved, categories, budget = 
           </button>
         </div>
 
-        <form className="modal-form" onSubmit={handleSubmit}>
-          <p className="budget-modal-subtitle">Setting budget for {monthLabel}</p>
-
-          {isEditing ? (
-            <label>
-              <span>Category</span>
-              <input value={budget.category.name} disabled />
-            </label>
-          ) : (
-            <label>
-              <span>Category</span>
-              <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>
-                <option value="" disabled>
-                  {categories.length ? 'Select a category' : 'No categories available'}
-                </option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          <label>
-            <span>Budget Amount (₹)</span>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              placeholder="500.00"
-              required
-            />
-          </label>
-
-          {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
-
-          <div className="modal-actions">
-            <button type="button" className="secondary-button" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="primary-button" disabled={isSubmitting || (!isEditing && !categoryId)}>
-              {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Budget'}
-            </button>
+        {noCategoriesAvailable ? (
+          <div className="modal-empty-state">
+            <p className="budget-modal-subtitle">Setting budget for {monthLabel}</p>
+            <p>{emptyMessage}</p>
+            <div className="modal-actions">
+              <button type="button" className="primary-button" onClick={onClose}>
+                Got it
+              </button>
+            </div>
           </div>
-        </form>
+        ) : (
+          <form className="modal-form" onSubmit={handleSubmit}>
+            <p className="budget-modal-subtitle">Setting budget for {monthLabel}</p>
+
+            {isEditing ? (
+              <label>
+                <span>Category</span>
+                <input value={budget.category.name} disabled />
+              </label>
+            ) : (
+              <label>
+                <span>Category</span>
+                <span className="modal-select-wrap">
+                  <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>
+                    <option value="" disabled>
+                      Select a category
+                    </option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon />
+                </span>
+              </label>
+            )}
+
+            <label>
+              <span>Budget Amount (₹)</span>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                placeholder="500.00"
+                required
+              />
+            </label>
+
+            {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
+
+            <div className="modal-actions">
+              <button type="button" className="secondary-button" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="primary-button" disabled={isSubmitting || (!isEditing && !categoryId)}>
+                {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Budget'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

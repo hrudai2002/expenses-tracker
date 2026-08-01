@@ -139,4 +139,3 @@ class TransactionService {
 }
 
 export { TransactionService };
-

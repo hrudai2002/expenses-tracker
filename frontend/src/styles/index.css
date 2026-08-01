@@ -296,6 +296,8 @@ a {
 .month-select-wrap svg {
   position: absolute;
   right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 16px;
   height: 16px;
   color: var(--text-secondary);
@@ -412,6 +414,9 @@ a {
 .ghost-button {
   background: rgba(122, 60, 255, 0.08);
   color: #6337ee;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .stats-grid {
@@ -730,6 +735,39 @@ a {
     linear-gradient(180deg, #f6f7fd 0%, #eef0fb 100%);
 }
 
+.screen-state {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 72px 24px 24px;
+  background:
+    radial-gradient(circle at top right, rgba(122, 70, 255, 0.14), transparent 22%),
+    linear-gradient(180deg, #f6f7fd 0%, #eef0fb 100%);
+}
+
+.state-card {
+  width: min(100%, 420px);
+  padding: 32px 28px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.state-card h2 {
+  margin: 0 0 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.state-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 .auth-shell.simple {
   grid-template-columns: 1fr;
 }
@@ -948,6 +986,23 @@ a {
 .transaction-copy p {
   margin: 4px 0 0;
   color: var(--text-secondary);
+}
+
+.transaction-note {
+  display: block;
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.transaction-cell-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.transaction-cell-copy .transaction-note {
+  margin: 0;
 }
 
 .transaction-amount {
@@ -1229,6 +1284,12 @@ a {
 .form-error {
   margin: 0;
   color: #d63b52;
+  font-weight: 700;
+}
+
+.form-success {
+  margin: 0;
+  color: #17a94a;
   font-weight: 700;
 }
 
@@ -1557,6 +1618,7 @@ a {
 
 .category-pill.green { background: rgba(43, 195, 91, 0.12); color: #17a94a; }
 .category-pill.orange { background: rgba(255, 138, 51, 0.14); color: #d56a12; }
+.category-pill.teal { background: rgba(51, 197, 108, 0.14); color: #1a9a52; }
 .category-pill.blue { background: rgba(101, 103, 235, 0.12); color: #5658e0; }
 .category-pill.pink { background: rgba(255, 102, 187, 0.14); color: #d94898; }
 .category-pill.purple { background: rgba(107, 95, 252, 0.14); color: #6b5ffc; }
@@ -1585,17 +1647,20 @@ a {
 }
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(20, 20, 42, 0.45);
   display: grid;
   place-items: center;
   padding: 20px;
-  z-index: 40;
+  z-index: 100;
+  overflow-y: auto;
 }
 
 .modal-card {
   width: min(100%, 480px);
+  max-height: min(90vh, 720px);
+  overflow-y: auto;
   background: #fff;
   border-radius: 20px;
   box-shadow: var(--shadow-card);
@@ -1650,6 +1715,41 @@ a {
   background: #fbfbfe;
   outline: none;
   font: inherit;
+}
+
+.modal-select-wrap {
+  position: relative;
+  display: block;
+}
+
+.modal-select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.modal-select-wrap svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.modal-empty-state {
+  padding: 0 24px 24px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.modal-empty-state .modal-actions {
+  margin-top: 20px;
+  padding-top: 0;
+  border-top: none;
 }
 
 .type-toggle {

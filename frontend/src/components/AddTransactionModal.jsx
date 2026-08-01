@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { categoryApi, transactionApi } from '../lib/api.js';
 
-const categoryColors = ['#6567eb', '#ff8a33', '#6b5ffc', '#ff66bb', '#33c56c', '#ffcc33'];
+const categoryColors = ['#6366F1', '#F97316', '#22C55E', '#EC4899', '#06B6D4', '#EAB308'];
+
+function pickCategoryColor(categories) {
+  const used = new Set(categories.map((category) => category.color?.toLowerCase()).filter(Boolean));
+  return categoryColors.find((color) => !used.has(color.toLowerCase())) ?? categoryColors[categories.length % categoryColors.length];
+}
 
 function AddTransactionModal({ token, categories, isOpen, onClose, onCreated, transaction = null }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -61,6 +66,19 @@ function AddTransactionModal({ token, categories, isOpen, onClose, onCreated, tr
     }
   }, [filteredCategories, formState.categoryId, transactionType]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -72,7 +90,7 @@ function AddTransactionModal({ token, categories, isOpen, onClose, onCreated, tr
       const createdCategory = await categoryApi.create(token, {
         name: newCategoryName.trim(),
         type: transactionType,
-        color: categoryColors[categories.length % categoryColors.length]
+        color: pickCategoryColor(categories)
       });
 
       setFormState((currentState) => ({

@@ -8,7 +8,7 @@ import { budgetApi, categoryApi } from '../lib/api.js';
 import { formatRupee } from '../lib/currency.js';
 import { currentMonthYearValue, getMonthDayProgress, getMonthYearLabel, parseMonthYearValue } from '../lib/month.js';
 
-const palette = ['#6567eb', '#ff8a33', '#6b5ffc', '#ff66bb', '#33c56c', '#ffcc33'];
+const palette = ['#6567eb', '#ff8a33', '#33c56c', '#ff66bb', '#00bcd4', '#ffcc33'];
 
 function getCategoryEmoji(name) {
   const value = name.toLowerCase();
@@ -34,11 +34,19 @@ function BudgetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
-  const [modalHost, setModalHost] = useState(null);
 
   useEffect(() => {
-    setModalHost(document.querySelector('.app-main'));
-  }, []);
+    if (!modalOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [modalOpen]);
 
   const loadBudgets = async () => {
     setIsLoading(true);
@@ -103,13 +111,14 @@ function BudgetsPage() {
   };
 
   const modal =
-    modalOpen && modalHost ? (
+    modalOpen ? (
       <AddBudgetModal
         token={token}
         isOpen={modalOpen}
         onClose={handleCloseModal}
         onSaved={loadBudgets}
         categories={availableCategories}
+        expenseCategoryCount={categories.length}
         budget={editingBudget}
         month={month}
         year={year}
@@ -173,7 +182,7 @@ function BudgetsPage() {
           <h3>Category Budgets</h3>
           <div className="budget-panel-actions">
             <span className="budget-panel-hint">Click ✏️ to edit budgets</span>
-            <button type="button" className="primary-button" onClick={handleOpenCreate} disabled={!availableCategories.length}>
+            <button type="button" className="primary-button" onClick={handleOpenCreate}>
               + Add Budget
             </button>
           </div>
@@ -238,7 +247,7 @@ function BudgetsPage() {
         )}
       </section>
 
-      {modalHost ? createPortal(modal, modalHost) : null}
+      {modalOpen ? createPortal(modal, document.body) : null}
     </div>
   );
 }

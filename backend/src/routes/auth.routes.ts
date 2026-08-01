@@ -9,6 +9,7 @@ function buildAuthRoutes(authController: AuthController): Router {
   router.post('/signup', asyncHandler(authController.signup));
   router.post('/login', asyncHandler(authController.login));
   router.get('/me', authenticateRequest, asyncHandler(authController.me));
+  router.post('/change-password', authenticateRequest, asyncHandler(authController.changePassword));
 
   return router;
 }

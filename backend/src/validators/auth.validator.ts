@@ -11,6 +11,11 @@ type LoginPayload = {
   password: string;
 };
 
+type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 function validateSignupPayload(payload: unknown): SignupPayload {
   const data = ensureObject(payload);
 
@@ -30,5 +35,14 @@ function validateLoginPayload(payload: unknown): LoginPayload {
   };
 }
 
-export { validateLoginPayload, validateSignupPayload };
+function validateChangePasswordPayload(payload: unknown): ChangePasswordPayload {
+  const data = ensureObject(payload);
+
+  return {
+    currentPassword: requireString(data.currentPassword, 'currentPassword', { minLength: 8 }),
+    newPassword: requireString(data.newPassword, 'newPassword', { minLength: 8 })
+  };
+}
+
+export { validateChangePasswordPayload, validateLoginPayload, validateSignupPayload };
 

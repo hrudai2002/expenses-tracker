@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
 import { HTTP_STATUS } from '../utils/http-status.js';
-import { validateLoginPayload, validateSignupPayload } from '../validators/auth.validator.js';
+import { validateChangePasswordPayload, validateLoginPayload, validateSignupPayload } from '../validators/auth.validator.js';
 
 class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -20,6 +20,12 @@ class AuthController {
 
   me = async (request: Request, response: Response) => {
     const result = await this.authService.getCurrentUser(request.user!.id);
+    response.status(HTTP_STATUS.OK).json(result);
+  };
+
+  changePassword = async (request: Request, response: Response) => {
+    const payload = validateChangePasswordPayload(request.body);
+    const result = await this.authService.changePassword(request.user!.id, payload);
     response.status(HTTP_STATUS.OK).json(result);
   };
 }
